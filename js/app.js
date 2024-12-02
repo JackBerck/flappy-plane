@@ -25,28 +25,37 @@ roadObj.src = "/assets/img/backgrounds/roadway.jpg";
 const towerObj = new Image();
 towerObj.src = "/assets/img/icons/tower.png";
 towerObj.onload = () => {
-  towerWidth = towerObj.width; // Update width setelah image load
+  towerWidth = towerObj.width; // Update width of the tower
   initialAnimation();
 };
 
+// Backsound
+const backsound = new Audio("/assets/sounds/pou.mp3");
+backsound.loop = true;
+backsound.volume = 0.8;
+
 // Load sound effects
-const gameOverSound = new Audio("/assets/sounds/explosion.mp3");
-gameOverSound.load(); // Pre-load audio
+const gameOverSoundExplosion = new Audio("/assets/sounds/explosion.mp3");
+gameOverSoundExplosion.load(); // Pre-load audio
 let isSoundLoaded = false;
 
-gameOverSound.addEventListener('canplaythrough', () => {
+gameOverSoundExplosion.addEventListener(
+  "canplaythrough",
+  () => {
     isSoundLoaded = true;
-}, false);
+  },
+  false
+);
 
-gameOverSound.addEventListener('error', (e) => {
-    console.error('Error loading sound:', e);
+gameOverSoundExplosion.addEventListener("error", (e) => {
+  console.error("Error loading sound:", e);
 });
 
 // Load explosion image
 const explosionObj = new Image();
 explosionObj.src = "/assets/img/effects/explosion.gif";
 
-// Tambah variabel posisi ledakan
+// Explosion position
 let explosionX = 0;
 let explosionY = 0;
 
@@ -59,10 +68,9 @@ let towerSpawnInterval = 100; // Perlambat spawn rate tower
 
 // Function to create a new pair of towers
 function createTower() {
-  // Pastikan dimensi valid
   if (towerWidth <= 0 || !towerObj.complete) return;
 
-  const minHeight = 100; // Minimum height untuk tower
+  const minHeight = 100; // Minimum height for the tower
   const maxHeight = canvas.height - towerGap - 100; // Maximum height
   const randomHeight =
     Math.floor(Math.random() * (maxHeight - minHeight)) + minHeight;
@@ -84,25 +92,17 @@ function createTower() {
 // Function to draw towers
 function drawTowers() {
   towers.forEach((tower) => {
-    // Menggambar outline persegi
-    ctx.strokeRect(
-      tower.x,      // x koordinat tower
-      tower.y,      // y koordinat tower
-      tower.width,  // lebar tower
-      tower.height  // tinggi tower
-    );
-
     ctx.save(); // Save the current state of the context
     if (tower.y === 0) {
       // Check if it's the upper tower
       ctx.translate(tower.x + tower.width / 2, tower.height / 2); // Translate to the center of the tower
       ctx.rotate(Math.PI); // Rotate 180 degrees
       ctx.drawImage(
-        towerObj,           // gambar tower
-        -tower.width / 2,   // x tujuan (digeser setengah lebar ke kiri)
-        -tower.height / 2,  // y tujuan (digeser setengah tinggi ke atas)
-        tower.width,        // lebar gambar
-        tower.height        // tinggi gambar
+        towerObj,
+        -tower.width / 2,
+        -tower.height / 2,
+        tower.width,
+        tower.height
       );
     } else {
       ctx.drawImage(towerObj, tower.x, tower.y, tower.width, tower.height);
@@ -122,16 +122,15 @@ function updateTowers() {
     const planeHeight = planeObj.height * 0.1;
     const planeX = 144;
 
-    // Tambah margin collision untuk lebih akurat
     const collisionMargin = 10;
     if (
-      planeX < tower.x + tower.width - collisionMargin && // Pesawat di kiri tower
-      planeX + planeWidth > tower.x + collisionMargin && // Pesawat di kanan tower
-      planeY < tower.y + tower.height - collisionMargin && // Pesawat di atas tower
-      planeY + planeHeight > tower.y + collisionMargin // Pesawat di bawah tower
+      planeX < tower.x + tower.width - collisionMargin && // Plane in the left of tower
+      planeX + planeWidth > tower.x + collisionMargin && // Plane in the right of tower
+      planeY < tower.y + tower.height - collisionMargin && // Plane on top of tower
+      planeY + planeHeight > tower.y + collisionMargin // Plane below tower
     ) {
-      explosionX = planeX - planeWidth/2; // Set posisi ledakan
-      explosionY = planeY - planeHeight/2;
+      explosionX = planeX - planeWidth / 2;
+      explosionY = planeY - planeHeight / 2;
       isGameStarted = false;
       drawGameOver();
       return;
@@ -151,7 +150,7 @@ function updateTowers() {
     }
   });
 
-  // Validasi sebelum spawn tower baru
+  // Validate tower spawn interval
   if (frameCount % towerSpawnInterval === 0 && towerObj.complete) {
     createTower();
   }
@@ -188,18 +187,15 @@ function drawPlane() {
   const planeWidth = planeObj.width * 0.1;
   const planeHeight = planeObj.height * 0.1;
 
-  ctx.strokeStyle = "red";
-  ctx.strokeRect(144, planeY, planeWidth, planeHeight);
-
   ctx.save(); // Save the current state of the context
   ctx.translate(144, planeY + planeHeight / 2); // Translate the context to the center of the plane
   ctx.rotate(angle); // Rotate the context based on the angle
   ctx.drawImage(
-    planeObj,          // gambar pesawat
-    0,   // x tujuan (digeser setengah lebar ke kiri)
-    -planeHeight / 2,  // y tujuan (digeser setengah tinggi ke atas)
-    planeWidth,        // lebar gambar
-    planeHeight        // tinggi gambar
+    planeObj,
+    0,
+    -planeHeight / 2,
+    planeWidth,
+    planeHeight
   );
   ctx.restore(); // Restore the context to the previous state
 }
@@ -218,13 +214,7 @@ function initialAnimation() {
   ctx.save(); // Save the current state of the context
   ctx.translate(144, canvas.height / 2 + initialOffset); // Translate the context to the center of the plane
   ctx.rotate(angle); // Rotate the context based on the angle
-  ctx.drawImage(
-    planeObj,
-    0,
-    -planeHeight / 2,
-    planeWidth,
-    planeHeight
-  );
+  ctx.drawImage(planeObj, 0, -planeHeight / 2, planeWidth, planeHeight);
   ctx.restore(); // Restore the context to the previous state
   drawRoad(); // Draw the road on the canvas
   // Call the initialAnimation function again to create a loop effect if the game is not started
@@ -242,26 +232,34 @@ function displayScore() {
 
 // Update drawGameOver to include final score
 function drawGameOver() {
+  // Delete event listeners
+  document.removeEventListener('keydown', handleKeydown);
+  document.removeEventListener('touchstart', handleTouch);
+
   if (isSoundLoaded) {
     try {
-        gameOverSound.currentTime = 0; // Reset audio ke awal
-        gameOverSound.play()
-        .catch(e => console.error('Error playing sound:', e));
+      gameOverSoundExplosion.currentTime = 0; // Reset audio
+      gameOverSoundExplosion
+        .play()
+        .catch((e) => console.error("Error playing sound:", e));
+
+      // Pause backsound
+      backsound.pause();
     } catch (e) {
-        console.error('Error playing sound:', e);
+      console.error("Error playing sound:", e);
     }
   }
-  
+
   // Draw explosion
   ctx.drawImage(
     explosionObj,
     explosionX,
     explosionY,
-    planeObj.width * 0.2,  // Ukuran ledakan 2x ukuran pesawat
+    planeObj.width * 0.2,
     planeObj.height * 0.2
   );
-  
-  // Delay text game over
+
+  // Display text game over
   setTimeout(() => {
     ctx.fillStyle = "white";
     ctx.font = "48px serif";
@@ -274,7 +272,7 @@ function drawGameOver() {
       canvas.height / 2
     );
     ctx.fillText("Click to restart", canvas.width / 2, canvas.height / 2 + 50);
-  }, 1000); // Delay 1 detik
+  }, 500); // Delay 0.5 seconds
 }
 
 // Update the game state
@@ -286,18 +284,22 @@ function update() {
   velocity += gravity; // Update the velocity based on gravity
   planeY += velocity; // Update the position of the plane based on the velocity
 
-  angle = Math.min(Math.max(velocity / 20, -Math.PI / 10), Math.PI / 10); // Update the angle based on the velocity
+  // Check if the plane is out of bounds
+  if (planeY <= 0) {
+    planeY = 0;
+    velocity = 0;
+  }
 
-  // Check if the plane hits the top of the canvas and stop the plane if it does
+  // Check if the plane hits the ground
   if (planeY + planeHeight >= canvas.height - 64) {
-    explosionX = 144 - planeWidth/2; // Set posisi ledakan
-    explosionY = planeY - planeHeight/2;
+    explosionX = 144 - planeWidth / 2;
+    explosionY = planeY - planeHeight / 2;
     isGameStarted = false;
-    const gameOverSound = new Audio("/assets/sounds/explosion.mp3");
-    gameOverSound.play();
     drawGameOver();
     return;
   }
+
+  angle = Math.min(Math.max(velocity / 20, -Math.PI / 10), Math.PI / 10); // Update the angle based on the velocity
 
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
   drawTowers(); // Draw the towers on the canvas
@@ -310,29 +312,32 @@ function update() {
 }
 
 // Add event listener for keydown event
-document.addEventListener("keydown", () => {
+const handleKeydown = (e) => {
   if (!isGameStarted) {
+    backsound.play();
     isGameStarted = true;
     update();
   }
   velocity += lift;
-});
+};
 
-// Add event listener for touchstart event
-document.addEventListener("touchstart", () => {
+// Add event listener for touch event
+const handleTouch = (e) => {
   if (!isGameStarted) {
+    backsound.play();
     isGameStarted = true;
     update();
   }
   velocity += lift;
-});
+};
+
+document.addEventListener("keydown", handleKeydown); // Add event listener for keydown event
+document.addEventListener("touchstart", handleTouch); // Add event listener for touch event
 
 // Add event listener for click event to restart the game
 canvas.addEventListener("click", () => {
   if (!isGameStarted) {
+    backsound.play();
     document.location.reload();
   }
 });
-
-// Remove the initial call to initialAnimation
-// initialAnimation(); // Call the initialAnimation function to start the game
