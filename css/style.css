@@ -1,11 +1,13 @@
 :root {
     --dark-base: #030712;
+    --light-base: #F3F4F6;
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: serif;
 }
 
 body {
@@ -19,4 +21,35 @@ body {
 canvas {
     background-image: url('/assets/img/backgrounds/wtc-attack.webp');
     background-size: cover;
+}
+
+.description {
+    position: absolute;
+    top: 128px;
+    right: 128px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: var(--light-base);
+    background-color: #111827;
+    padding: 16px;
+    max-width: 256px;
+    text-align: justify;
+}
+@media screen and (max-width: 1024px) {
+    .description {
+        display: none;
+    }
+}
+
+.description h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.description p {
+    font-size: 16px;
+    font-weight: 400;
 }

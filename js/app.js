@@ -1,4 +1,10 @@
 const canvas = document.getElementById("gameCanvas"); // Get the canvas element
+
+// Set the width and height of the canvas
+if (window.innerWidth < 768) {
+  canvas.width = 360;
+  canvas.height = 480;
+}
 const ctx = canvas.getContext("2d"); // Get the context of the canvas
 
 let planeY = canvas.height / 2; // Initial position of the plane
