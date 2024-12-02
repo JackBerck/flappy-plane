@@ -29,6 +29,27 @@ towerObj.onload = () => {
   initialAnimation();
 };
 
+// Load sound effects
+const gameOverSound = new Audio("/assets/sounds/explosion.mp3");
+gameOverSound.load(); // Pre-load audio
+let isSoundLoaded = false;
+
+gameOverSound.addEventListener('canplaythrough', () => {
+    isSoundLoaded = true;
+}, false);
+
+gameOverSound.addEventListener('error', (e) => {
+    console.error('Error loading sound:', e);
+});
+
+// Load explosion image
+const explosionObj = new Image();
+explosionObj.src = "/assets/img/effects/explosion.gif";
+
+// Tambah variabel posisi ledakan
+let explosionX = 0;
+let explosionY = 0;
+
 // Tower settings
 let towerWidth = 50; // Set default width jika image belum load
 const towerGap = 150; // Gap between upper and lower towers
@@ -109,6 +130,8 @@ function updateTowers() {
       planeY < tower.y + tower.height - collisionMargin && // Pesawat di atas tower
       planeY + planeHeight > tower.y + collisionMargin // Pesawat di bawah tower
     ) {
+      explosionX = planeX - planeWidth/2; // Set posisi ledakan
+      explosionY = planeY - planeHeight/2;
       isGameStarted = false;
       drawGameOver();
       return;
@@ -173,7 +196,7 @@ function drawPlane() {
   ctx.rotate(angle); // Rotate the context based on the angle
   ctx.drawImage(
     planeObj,          // gambar pesawat
-    -planeWidth / 2 + planeWidth / 2,   // x tujuan (digeser setengah lebar ke kiri)
+    0,   // x tujuan (digeser setengah lebar ke kiri)
     -planeHeight / 2,  // y tujuan (digeser setengah tinggi ke atas)
     planeWidth,        // lebar gambar
     planeHeight        // tinggi gambar
@@ -197,7 +220,7 @@ function initialAnimation() {
   ctx.rotate(angle); // Rotate the context based on the angle
   ctx.drawImage(
     planeObj,
-    -planeWidth / 2,
+    0,
     -planeHeight / 2,
     planeWidth,
     planeHeight
@@ -219,17 +242,39 @@ function displayScore() {
 
 // Update drawGameOver to include final score
 function drawGameOver() {
-  ctx.fillStyle = "white";
-  ctx.font = "48px serif";
-  ctx.textAlign = "center";
-  ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 - 50);
-  ctx.font = "24px serif";
-  ctx.fillText(
-    "Score: " + Math.floor(score),
-    canvas.width / 2,
-    canvas.height / 2
+  if (isSoundLoaded) {
+    try {
+        gameOverSound.currentTime = 0; // Reset audio ke awal
+        gameOverSound.play()
+        .catch(e => console.error('Error playing sound:', e));
+    } catch (e) {
+        console.error('Error playing sound:', e);
+    }
+  }
+  
+  // Draw explosion
+  ctx.drawImage(
+    explosionObj,
+    explosionX,
+    explosionY,
+    planeObj.width * 0.2,  // Ukuran ledakan 2x ukuran pesawat
+    planeObj.height * 0.2
   );
-  ctx.fillText("Click to restart", canvas.width / 2, canvas.height / 2 + 50);
+  
+  // Delay text game over
+  setTimeout(() => {
+    ctx.fillStyle = "white";
+    ctx.font = "48px serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 - 50);
+    ctx.font = "24px serif";
+    ctx.fillText(
+      "Score: " + Math.floor(score),
+      canvas.width / 2,
+      canvas.height / 2
+    );
+    ctx.fillText("Click to restart", canvas.width / 2, canvas.height / 2 + 50);
+  }, 1000); // Delay 1 detik
 }
 
 // Update the game state
@@ -245,7 +290,11 @@ function update() {
 
   // Check if the plane hits the top of the canvas and stop the plane if it does
   if (planeY + planeHeight >= canvas.height - 64) {
+    explosionX = 144 - planeWidth/2; // Set posisi ledakan
+    explosionY = planeY - planeHeight/2;
     isGameStarted = false;
+    const gameOverSound = new Audio("/assets/sounds/explosion.mp3");
+    gameOverSound.play();
     drawGameOver();
     return;
   }
